@@ -3,6 +3,8 @@ import axios from 'axios';
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import { ToastContainer, toast } from 'react-toastify';
 
+const API_BASE = import.meta.env.VITE_BACKEND_URL;
+
 const Enquiryy = () => {
   let [enquiryList, setEnquiryList] = useState([]);
   let [formData, setFormData] = useState({
@@ -17,7 +19,7 @@ const Enquiryy = () => {
   const getAllEnquiries = useCallback(() => {
     setLoading(true);
     axios
-      .get('http://localhost:8000/api/website/enquiry/view')
+      .get(`${API_BASE}/api/website/enquiry/view`)
       .then((res) => {
         if (res.data.status === 1) {
           setEnquiryList(res.data.enquiryList);
@@ -33,7 +35,7 @@ const Enquiryy = () => {
   }, [getAllEnquiries]);
 
   let editRow = (editId) => {
-    axios.get(`http://localhost:8000/api/website/enquiry/single/${editId}`).then((res) => {
+    axios.get(`${API_BASE}/api/website/enquiry/single/${editId}`).then((res) => {
       let data = res.data;
       setFormData(data.enquiry);
     });
@@ -47,15 +49,15 @@ const Enquiryy = () => {
       confirmButtonText: "Delete"
     }).then((result) => {
       if (result.isConfirmed) {
-        Swal.showLoading(); // Show loading indicator
+        Swal.showLoading();
         axios
-          .delete(`http://localhost:8000/api/website/enquiry/delete/${delId}`)
+          .delete(`${API_BASE}/api/website/enquiry/delete/${delId}`)
           .then((res) => {
             Swal.fire("Deleted!", "The enquiry has been deleted.", "success");
             toast.success("Enquiry Deleted Successfully");
             getAllEnquiries();
           })
-          .catch((err) => {
+          .catch(() => {
             Swal.fire("Error!", "Something went wrong while deleting.", "error");
           });
       } else if (result.isDenied) {
@@ -66,23 +68,23 @@ const Enquiryy = () => {
 
   let saveEnquiry = (e) => {
     e.preventDefault();
-    setLoading(true); // Set loading state
+    setLoading(true);
 
     if (formData._id) {
       axios
-        .put(`http://localhost:8000/api/website/enquiry/update/${formData._id}`, formData)
-        .then((res) => {
+        .put(`${API_BASE}/api/website/enquiry/update/${formData._id}`, formData)
+        .then(() => {
           toast.success("Enquiry Updated Successfully");
           setFormData({ name: "", email: "", phone: "", message: "", _id: "" });
           getAllEnquiries();
         })
-        .catch((error) => {
+        .catch(() => {
           toast.error("Error updating enquiry. Please try again.");
         })
         .finally(() => setLoading(false));
     } else {
       axios
-        .post("http://localhost:8000/api/website/enquiry/insert", formData)
+        .post(`${API_BASE}/api/website/enquiry/insert`, formData)
         .then((res) => {
           if (res.data.status === 0 && res.data.error?.code === 11000) {
             toast.error("This email has already been used for an enquiry.");
@@ -92,7 +94,7 @@ const Enquiryy = () => {
             getAllEnquiries();
           }
         })
-        .catch((error) => {
+        .catch(() => {
           toast.error("Something went wrong while submitting your enquiry.");
         })
         .finally(() => setLoading(false));
@@ -170,7 +172,7 @@ const Enquiryy = () => {
               <button
                 type="submit"
                 className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 rounded-xl hover:brightness-110 transition-all duration-300"
-                disabled={loading} // Disable button while loading
+                disabled={loading}
               >
                 {formData._id ? '✉️ Update Enquiry' : '✉️ Submit Enquiry'}
               </button>
@@ -235,4 +237,5 @@ const Enquiryy = () => {
 };
 
 export default Enquiryy;
+
 
